@@ -79,11 +79,31 @@ h1 {
   background: #334155;
 }
 
+.cell.x { color: #38bdf8; }
+.cell.o { color: #f43f5e; }
+
+.score {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 15px;
+  font-size: 18px;
+}
+
+.win {
+  background: #22c55e !important;
+  animation: glow 0.5s infinite alternate;
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 10px #22c55e; }
+  to { box-shadow: 0 0 25px #22c55e; }
+}
+
 .footer {
   margin-top: 60px;
 }
 
 .footer a {
   color: #38bdf8;
-  text-decoration: none;
 }
