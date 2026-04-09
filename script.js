@@ -29,14 +29,6 @@ function createBoard() {
     div.addEventListener("click", () => handleClick(index));
     board.appendChild(div);
   });
-
-  if (!gameActive) return;
-
-  if (mode === "solo") {
-    statusText.innerText = "Turn: " + currentPlayer;
-  } else {
-    statusText.innerText = "Your Turn (X)";
-  }
 }
 
 function handleClick(index) {
@@ -44,6 +36,7 @@ function handleClick(index) {
 
   clickSound.play();
 
+  // 🟢 SOLO MODE
   if (mode === "solo") {
     cells[index] = currentPlayer;
     createBoard();
@@ -55,14 +48,18 @@ function handleClick(index) {
     return;
   }
 
+  // 🔵 PLAYER MOVE
   cells[index] = "X";
   createBoard();
 
   if (checkWinner()) return;
 
+  // 👇 مهم جداً (تصليح المشكلة)
+  statusText.innerText = "Computer Thinking...";
+
+  // 🤖 AI MOVE
   if (mode === "ai" && gameActive) {
-    statusText.innerText = "Computer Thinking...";
-    setTimeout(aiMove, 400);
+    setTimeout(aiMove, 500);
   }
 }
 
@@ -82,8 +79,13 @@ function aiMove() {
   if (move === null || move === undefined) return;
 
   cells[move] = "O";
+
   createBoard();
-  checkWinner();
+
+  if (checkWinner()) return;
+
+  // 👇 يرجع الدور إلك
+  statusText.innerText = "Your Turn (X)";
 }
 
 function randomMove() {
@@ -97,65 +99,64 @@ function randomMove() {
 }
 
 function bestMove() {
+  // 🟢 يفوز
   for (let i = 0; i < 9; i++) {
     if (cells[i] === "") {
       cells[i] = "O";
-      const win = isWinning("O");
+      if (isWinning("O")) {
+        cells[i] = "";
+        return i;
+      }
       cells[i] = "";
-      if (win) return i;
     }
   }
 
+  // 🔵 يمنعك تفوزي
   for (let i = 0; i < 9; i++) {
     if (cells[i] === "") {
       cells[i] = "X";
-      const win = isWinning("X");
+      if (isWinning("X")) {
+        cells[i] = "";
+        return i;
+      }
       cells[i] = "";
-      if (win) return i;
     }
   }
 
+  // 🟡 الوسط
   if (cells[4] === "") return 4;
 
+  // 🟠 الزوايا
   const corners = [0, 2, 6, 8].filter(i => cells[i] === "");
   if (corners.length > 0) {
     return corners[Math.floor(Math.random() * corners.length)];
   }
 
+  // 🔴 fallback
   return randomMove();
 }
 
 function isWinning(player) {
   const wins = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
   ];
 
-  return wins.some(([a, b, c]) => {
+  return wins.some(([a,b,c]) => {
     return cells[a] === player && cells[b] === player && cells[c] === player;
   });
 }
 
 function checkWinner() {
   const wins = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
   ];
 
   for (let combo of wins) {
-    const [a, b, c] = combo;
+    const [a,b,c] = combo;
 
     if (cells[a] !== "" && cells[a] === cells[b] && cells[a] === cells[c]) {
       highlightWin(combo);
@@ -194,6 +195,7 @@ function resetGame() {
   cells = ["", "", "", "", "", "", "", "", ""];
   gameActive = true;
   currentPlayer = "X";
+
   createBoard();
 
   if (mode === "solo") {
